@@ -1,7 +1,7 @@
 # financial_planner/simulation_engine.py
 
 from decimal import ROUND_HALF_UP, Decimal
-from typing import Dict, List, Optional
+from typing import Optional
 
 from .household import Household
 
@@ -12,7 +12,7 @@ class SimulationEngine:
     updating financial states, and generating reports based on the simulation results.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initializes a SimulationEngine instance.
         """
@@ -20,9 +20,9 @@ class SimulationEngine:
         self.start_year: Optional[int] = None
         self.end_year: Optional[int] = None
         self.inflation_rate: Decimal = Decimal("0.00")
-        self.results: List[Dict[str, Decimal]] = []
+        self.results: list[dict[str, Decimal]] = []
 
-    def load_scenario(self, config: Dict) -> None:
+    def load_scenario(self, config: dict) -> None:
         """
         Reads and parses the basic scenario configuration to initialize simulation parameters
         and household details.
@@ -60,9 +60,11 @@ class SimulationEngine:
             print("[DEBUG] Scenario loaded successfully.")
 
         except KeyError as e:
-            raise ValueError(f"Missing required configuration field: {e}")
+            message = f"Missing required configuration field: {e}"
+            raise ValueError(message) from e
         except (TypeError, ValueError) as e:
-            raise ValueError(f"Invalid configuration value: {e}")
+            message = f"Invalid configuration value: {e}"
+            raise ValueError(message) from e
 
     def run_simulation(self) -> None:
         """
@@ -70,7 +72,8 @@ class SimulationEngine:
         and determining naive discretionary income for each year.
         """
         if not self.household or self.start_year is None or self.end_year is None:
-            raise RuntimeError("SimulationEngine is not properly initialized. Please load a scenario first.")
+            message = "SimulationEngine is not properly initialized. Please load a scenario first."
+            raise RuntimeError(message)
 
         for year in range(self.start_year, self.end_year + 1):
             print(f"[DEBUG] Running simulation for year {year}.")

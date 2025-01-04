@@ -65,6 +65,6 @@ def test_generate_report_file_write_error():
 
     # Attempt to write to a directory (which should fail)
     with tempfile.TemporaryDirectory() as tmp_dir:
-        with pytest.raises(IOError):
+        with pytest.raises(RuntimeError):
             # Directories cannot be opened as files, should raise an IOError
             generate_report(results, filename=tmp_dir)

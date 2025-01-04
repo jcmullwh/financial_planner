@@ -1,7 +1,6 @@
 # financial_planner/household.py
 
 from decimal import ROUND_HALF_UP, Decimal
-from typing import List
 
 from .person import Person
 
@@ -12,12 +11,12 @@ class Household:
     such as living and housing costs.
     """
 
-    def __init__(self, members: List[Person], living_costs: float, housing_costs: float):
+    def __init__(self, members: list[Person], living_costs: float, housing_costs: float):
         """
         Initializes a Household instance.
 
         Args:
-            members (List[Person]): A list of Person objects representing the household members.
+            members (list[Person]): A list of Person objects representing the household members.
             living_costs (float): Annual mandatory living expenses (e.g., groceries, utilities).
             housing_costs (float): Annual housing-related expenses (e.g., rent, mortgage).
         """
@@ -32,7 +31,7 @@ class Household:
         Returns:
             Decimal: The total household income for the current year.
         """
-        total_income = sum(member.income for member in self.members)
+        total_income = sum((member.income for member in self.members), Decimal("0.00"))
         print(f"[DEBUG] Aggregated household income: {total_income}.")
         return total_income
 
@@ -43,7 +42,7 @@ class Household:
         Returns:
             Decimal: The total taxes for the household for the current year.
         """
-        total_taxes = sum(member.calculate_taxes() for member in self.members)
+        total_taxes = sum((member.calculate_taxes() for member in self.members), Decimal("0.00"))
         print(f"[DEBUG] Aggregated household taxes: {total_taxes}.")
         return total_taxes
 

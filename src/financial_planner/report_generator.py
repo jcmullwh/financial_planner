@@ -2,19 +2,20 @@
 
 import csv
 from decimal import Decimal
-from typing import Dict, List
 
 
-def generate_report(results: List[Dict[str, Decimal]], filename: str = "financial_simulation_results.csv") -> None:
+def generate_report(results: list[dict[str, Decimal]], filename: str = "financial_simulation_results.csv") -> None:
     """
     Compiles and formats the simulation results into a readable CSV file with raw numerical values.
 
     Args:
-        results (List[Dict[str, Decimal]]): The list of yearly financial summaries.
-        filename (str, optional): The name of the CSV file to save the results. Defaults to "financial_simulation_results.csv".
+        results (list[dict[str, Decimal]]): The list of yearly financial summaries.
+        filename (str, optional): The name of the CSV file to save the results.
+            Defaults to "financial_simulation_results.csv".
     """
     if not results:
-        raise RuntimeError("No simulation results to report. Please run the simulation first.")
+        message = "No simulation results to report. Please run the simulation first."
+        raise RuntimeError(message)
 
     headers = ["Year", "Total Income", "Total Taxes", "Total Mandatory Expenses", "Leftover", "Naive Discretionary"]
 
@@ -35,5 +36,6 @@ def generate_report(results: List[Dict[str, Decimal]], filename: str = "financia
                 )
         print(f"[INFO] Report generated and saved to {filename}")
     except OSError as e:
+        error_message = "Failed to generate report."
         print(f"[ERROR] Failed to write report to {filename}: {e}")
-        raise  # Re-raise the exception to allow the test to catch it
+        raise RuntimeError(error_message) from e

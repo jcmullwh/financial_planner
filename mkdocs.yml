@@ -60,6 +60,8 @@ watch:
 
 nav:
     - About: index.md
+    - Project Plan:
+        - "Project Overview": "project_plan/project_overview.md"
     - Tutorials:
         - "Index": "tutorials/index.md"
         - "Getting Started": "tutorials/getting_started.md"

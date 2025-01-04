@@ -16,18 +16,21 @@
 
 ---
 
+## Overview
+This project provides tools for modeling and analyzing personal or organizational finances. It uses Python 3.9+, PDM for package management, Ruff for linting, Mypy for type checking, and Mkdocs for generating documentation. It includes functionalities to forecast budgets, investments, and tax scenarios, helping users make informed financial decisions.
+
 ## Development
 
 ### Setup environment
 
-We use [Hatch](https://hatch.pypa.io/latest/install/) to manage the development environment and production build. Ensure it's installed on your system.
+We use [PDM](https://pdm.fming.dev/) to manage the development environment and production build. Ensure it's installed on your system.
 
 ### Run unit tests
 
 You can run all the tests with:
 
 ```bash
-hatch run test
+pdm run test
 ```
 
 ### Format the code
@@ -35,7 +38,7 @@ hatch run test
 Execute the following command to apply linting and check typing:
 
 ```bash
-hatch run lint
+pdm run lint
 ```
 
 ### Publish a new version
@@ -43,15 +46,15 @@ hatch run lint
 You can bump the version, create a commit and associated tag with one command:
 
 ```bash
-hatch version patch
+pdm version patch
 ```
 
 ```bash
-hatch version minor
+pdm version minor
 ```
 
 ```bash
-hatch version major
+pdm version major
 ```
 
 Your default Git text editor will open so you can add information about the release.
@@ -63,11 +66,11 @@ When you push the tag on GitHub, the workflow will automatically publish it on P
 You can serve the Mkdocs documentation with:
 
 ```bash
-hatch run docs-serve
+pdm run docs-serve
 ```
 
 It'll automatically watch for changes in your code.
 
 ## License
 
-This project is licensed under the terms of the Not open source.
+This project is licensed under the terms of the MIT License.

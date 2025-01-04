@@ -5,7 +5,7 @@ import sys
 logging.basicConfig(level=logging.INFO)
 
 # List of allowed commands for validation
-ALLOWED_COMMANDS = [["ruff", "format", "."], ["ruff", "check", "."], ["mypy", "src/"]]
+ALLOWED_COMMANDS = [["ruff", "format", "."], ["ruff", "check", ".", "--fix"], ["mypy", "src/"]]
 
 
 def run_command(command):
@@ -21,7 +21,7 @@ def run_command(command):
 
 
 # Commands to run
-commands = [["ruff", "format", "."], ["ruff", "check", "."], ["mypy", "src/"]]
+commands = [["ruff", "format", "."], ["ruff", "check", ".", "--fix"], ["mypy", "src/"]]
 
 # Execute each command
 for command in commands:
