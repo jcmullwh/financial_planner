@@ -1,0 +1,140 @@
+[project]
+name = "financial_planner"
+authors = [
+  { name = "financial_planner", email = "king.arthur@camelot.bt" }
+]
+description = "Financial Planning Tools"
+readme = "README.md"
+dynamic = ["version"]
+classifiers = [
+    "Programming Language :: Python :: 3 :: Only",
+]
+requires-python = ">=3.9"
+dependencies = [
+]
+
+[project.urls]
+Documentation = "https://jcmullwh.github.io/financial_planner/"
+Source = "https://github.com/jcmullwh/financial_planner"
+
+
+[tool.mypy]
+files = ["financial_planner"]
+disallow_untyped_defs = "True"
+disallow_any_unimported = "True"
+no_implicit_optional = "True"
+check_untyped_defs = "True"
+warn_return_any = "True"
+warn_unused_ignores = "True"
+show_error_codes = "True"
+
+
+[tool.ruff]
+target-version = "py39"
+line-length = 120
+[tool.ruff.lint]
+extend-select = ["I"]
+select = [
+    "A",
+    "ARG",
+    "B",
+    "C",
+    "DTZ",
+    "E",
+    "EM",
+    "F",
+    "FBT",
+    "ICN",
+    "ISC",
+    "N",
+    "PLC",
+    "PLE",
+    "PLR",
+    "PLW",
+    "Q",
+    "RUF",
+    "S",
+    "T",
+    "TID",
+    "UP",
+    "W",
+    "YTT",
+]
+ignore = [
+    # Allow non-abstract empty methods in abstract base classes
+    "B027",
+    # Allow boolean positional values in function calls, like `dict.get(... True)`
+    "FBT003",
+    # Ignore checks for possible passwords
+    "S105",
+    "S106",
+    "S107",
+    # Ignore complexity
+    "C901",
+    "PLR0911",
+    "PLR0912",
+    "PLR0913",
+    "PLR0915",
+]
+
+[tool.pytest.ini_options]
+addopts = "--cov=financial_planner/ --cov-report=term-missing"
+asyncio_mode = "strict"
+
+
+[tool.pdm.dev-dependencies]
+test = [
+  "pytest>=8.2.0",
+  "pytest-cov>=5.0.0",
+  "pytest-asyncio",
+  ]
+docs = [
+  "mkdocs>=1.6.0",
+  "mkdocs-material>=9.5.21",
+  "mkdocstrings[python]>=0.25.1"
+]
+
+
+[tool.pdm.scripts]
+test = "pytest"
+test-cov-xml = "pytest --cov-report=xml"
+lint = [
+  "ruff format .",
+  "ruff --fix .",
+  "mypy financial_planner/",
+]
+lint-check = [
+  "ruff format --check .",
+  "ruff .",
+  "mypy financial_planner/",
+]
+docs-serve = "mkdocs serve"
+docs-build = "mkdocs build"
+
+[tool.pdm.build]
+# excludes = ["./**/.git"]
+# package-dir = "."
+package-dir = "src"
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[dependency-groups]
+dev = [
+    "deptry>=0.16.1",
+    "mypy>=1.10.0",
+    "ruff>=0.4.3",
+    "pre-commit>=3.7.0",
+    "tox>=4.15.0",
+]
+test = [
+  "pytest>=8.2.0",
+  "pytest-cov>=5.0.0",
+  "pytest-asyncio",
+  ]
+docs = [
+  "mkdocs>=1.6.0",
+  "mkdocs-material>=9.5.21",
+  "mkdocstrings[python]>=0.25.1"
+]
