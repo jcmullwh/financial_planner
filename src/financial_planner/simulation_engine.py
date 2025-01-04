@@ -1,8 +1,10 @@
 # financial_planner/simulation_engine.py
 
-from decimal import Decimal, ROUND_HALF_UP
-from typing import List, Dict, Optional
+from decimal import ROUND_HALF_UP, Decimal
+from typing import Dict, List, Optional
+
 from .household import Household
+
 
 class SimulationEngine:
     """
@@ -17,7 +19,7 @@ class SimulationEngine:
         self.household: Optional[Household] = None
         self.start_year: Optional[int] = None
         self.end_year: Optional[int] = None
-        self.inflation_rate: Decimal = Decimal('0.00')
+        self.inflation_rate: Decimal = Decimal("0.00")
         self.results: List[Dict[str, Decimal]] = []
 
     def load_scenario(self, config: Dict) -> None:
@@ -34,7 +36,9 @@ class SimulationEngine:
         try:
             self.start_year = int(config["start_year"])
             self.end_year = int(config["end_year"])
-            self.inflation_rate = Decimal(str(config.get("inflation_rate", 0.0))).quantize(Decimal('0.0001'), rounding=ROUND_HALF_UP)
+            self.inflation_rate = Decimal(str(config.get("inflation_rate", 0.0))).quantize(
+                Decimal("0.0001"), rounding=ROUND_HALF_UP
+            )
 
             household_config = config["household"]
             living_costs = float(household_config["living_costs"])
@@ -51,11 +55,7 @@ class SimulationEngine:
                 savings = float(member.get("savings", 0.0))
                 members.append(Person(name=name, income=income, tax_rate=tax_rate, savings=savings))
 
-            self.household = Household(
-                members=members,
-                living_costs=living_costs,
-                housing_costs=housing_costs
-            )
+            self.household = Household(members=members, living_costs=living_costs, housing_costs=housing_costs)
 
             print("[DEBUG] Scenario loaded successfully.")
 
@@ -89,7 +89,9 @@ class SimulationEngine:
             total_mandatory_expenses = self.household.total_mandatory_expenses()
 
             # Determine leftover income
-            leftover = (total_income - total_taxes - total_mandatory_expenses).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+            leftover = (total_income - total_taxes - total_mandatory_expenses).quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP
+            )
             naive_discretionary = leftover  # At this stage, no savings allocation
 
             # Capture current expenses before applying inflation
@@ -105,12 +107,12 @@ class SimulationEngine:
                 "leftover": leftover,
                 "naive_discretionary": naive_discretionary,
                 "living_costs": current_living_costs,
-                "housing_costs": current_housing_costs
+                "housing_costs": current_housing_costs,
             }
             self.results.append(year_result)
 
             print(f"[DEBUG] Year {year} results: {year_result}")
 
             # Apply inflation to next year's expenses if not the last year
-            if self.inflation_rate > Decimal('0.00') and year < self.end_year:
+            if self.inflation_rate > Decimal("0.00") and year < self.end_year:
                 self.household.apply_inflation(float(self.inflation_rate))

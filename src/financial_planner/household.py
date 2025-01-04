@@ -1,7 +1,8 @@
 # financial_planner/household.py
 
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal
 from typing import List
+
 from .person import Person
 
 

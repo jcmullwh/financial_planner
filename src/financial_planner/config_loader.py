@@ -1,7 +1,8 @@
 # financial_planner/config_loader.py
 
-import yaml
 from typing import Dict
+
+import yaml
 
 
 def load_yaml_config(filepath: str) -> Dict:
@@ -19,7 +20,7 @@ def load_yaml_config(filepath: str) -> Dict:
         yaml.YAMLError: If the YAML file contains syntax errors.
     """
     try:
-        with open(filepath, "r") as file:
+        with open(filepath) as file:
             config = yaml.safe_load(file)
             print(f"[DEBUG] Configuration loaded from {filepath}.")
             return config
