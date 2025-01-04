@@ -60,5 +60,18 @@ watch:
 
 nav:
     - About: index.md
+    - Tutorials:
+        - "Index": "tutorials/index.md"
+        - "Getting Started": "tutorials/getting_started.md"
+        - "First Simulation": "tutorials/first_simulation.md"
+    - How-To Guides:
+        - "Index": "how_to/index.md"
+        - "Update Inflation Rate": "how_to/update_inflation_rate.md"
+        - "Adjust Tax Rate": "how_to/adjust_tax_rate.md"
+        - "Adding Members": "how_to/adding_members.md"
     - Reference:
-        - financial_planner: reference/financial_planner.md
+        - "API Reference": "reference/index.md"
+    - Explanation:
+        - "Index": "explanation/index.md"
+        - "Architecture Overview": "explanation/architecture_overview.md"
+        - "Design Choices": "explanation/design_choices.md"
