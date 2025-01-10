@@ -1,15 +1,17 @@
 # financial_planner/simulation_engine.py
 
 from decimal import ROUND_HALF_UP, Decimal
-from typing import Optional
+from typing import Any, Optional
 
-from .household import Household
+from .config_loader import validate_event
+from .household import Household, Mortgage
+from .person import Person
 
 
 class SimulationEngine:
     """
-    Coordinates the simulation by managing the household, iterating through each simulation year,
-    updating financial states, and generating reports based on the simulation results.
+    Coordinates the simulation by managing the household, iterating through each simulation period,
+    updating financial states, applying events, and generating reports based on the simulation results.
     """
 
     def __init__(self) -> None:
@@ -21,10 +23,12 @@ class SimulationEngine:
         self.end_year: Optional[int] = None
         self.inflation_rate: Decimal = Decimal("0.00")
         self.results: list[dict[str, Decimal]] = []
+        self.events: list[dict[str, Any]] = []
+        self.time_frequency: str = "YEAR"  # Default frequency
 
     def load_scenario(self, config: dict) -> None:
         """
-        Reads and parses the basic scenario configuration to initialize simulation parameters
+        Reads and parses the scenario configuration to initialize simulation parameters
         and household details.
 
         Args:
@@ -40,12 +44,16 @@ class SimulationEngine:
                 Decimal("0.0001"), rounding=ROUND_HALF_UP
             )
 
+            # Handle time_frequency for future iterations
+            self.time_frequency = config.get("time_frequency", "YEAR").upper()
+            if self.time_frequency not in {"YEAR", "MONTH", "DAY"}:
+                error_message = f"Invalid time_frequency: {self.time_frequency}. Must be YEAR, MONTH, or DAY."
+                raise ValueError(error_message)
+
             household_config = config["household"]
             living_costs = float(household_config["living_costs"])
             housing_costs = float(household_config["housing_costs"])
             members_config = household_config["members"]
-
-            from .person import Person  # Importing here to avoid circular imports
 
             members = []
             for member in members_config:
@@ -57,65 +65,135 @@ class SimulationEngine:
 
             self.household = Household(members=members, living_costs=living_costs, housing_costs=housing_costs)
 
+            # Parse events if present
+            self.events = config.get("events", [])
+            for event in self.events:
+                validate_event(event)
+
             print("[DEBUG] Scenario loaded successfully.")
 
         except KeyError as e:
-            message = f"Missing required configuration field: {e}"
-            raise ValueError(message) from e
+            error_message = f"Missing required configuration field: {e}"
+            raise ValueError(error_message) from e
         except (TypeError, ValueError) as e:
-            message = f"Invalid configuration value: {e}"
-            raise ValueError(message) from e
+            error_message = f"Invalid configuration value: {e}"
+            raise ValueError(error_message) from e
+
+    def apply_event(self, event: dict) -> None:
+        """
+        Applies an event to the household based on its type.
+
+        Args:
+            event (dict): The event dictionary containing event details.
+        """
+        event_type = event["type"]
+        year = event["year"]
+
+        print(f"[DEBUG] Applying event '{event_type}' for year {year}.")
+
+        if self.household is None:
+            error_message = "Household not initialized."
+            raise RuntimeError(error_message)
+
+        if event_type == "house_purchase":
+            principal = Decimal(str(event["principal"]))
+            interest_rate = Decimal(str(event["interest_rate"]))
+            mortgage = Mortgage(principal=principal, interest_rate=interest_rate)
+            self.household.add_mortgage(mortgage)
+            print(f"[DEBUG] Mortgage added: Principal={principal}, Interest Rate={interest_rate}")
+
+        elif event_type == "new_child":
+            additional_expense = Decimal("5000.00")  # Example fixed increase
+            self.household.increase_living_costs(additional_expense)
+            print(f"[DEBUG] Living costs increased by {additional_expense} due to new child.")
+
+        elif event_type == "job_change":
+            member_name = event["member_name"]
+            new_income = Decimal(str(event["new_income"]))
+            member = self.household.get_member_by_name(member_name)
+            if member:
+                member.update_income_specific(new_income)
+                print(f"[DEBUG] {member_name}'s income updated to {new_income}.")
+            else:
+                print(f"[WARNING] Member '{member_name}' not found in household.")
+
+        elif event_type == "windfall":
+            amount = Decimal(str(event["amount"]))
+            self.household.add_windfall(amount)
+            print(f"[DEBUG] Windfall of {amount} added to household.")
 
     def run_simulation(self) -> None:
         """
-        Executes the multi-year financial loop, updating incomes, calculating taxes and expenses,
-        and determining naive discretionary income for each year.
+        Executes the multi-period financial loop, updating incomes, calculating taxes and expenses,
+        applying events, and determining naive discretionary income for each period.
         """
-        if not self.household or self.start_year is None or self.end_year is None:
-            message = "SimulationEngine is not properly initialized. Please load a scenario first."
-            raise RuntimeError(message)
+        if self.household is None:
+            error_message = "Household not initialized."
+            raise RuntimeError(error_message)
+        if self.start_year is None or self.end_year is None:
+            error_message = "Invalid simulation boundaries."
+            raise RuntimeError(error_message)
 
-        for year in range(self.start_year, self.end_year + 1):
-            print(f"[DEBUG] Running simulation for year {year}.")
+        current_period = self.start_year
+        print(f"[DEBUG] Period is currently {current_period}.")
+        self.calculate_and_store_results(current_period)
 
-            # Update incomes
-            for member in self.household.members:
-                member.update_income(year)
+        while current_period < self.end_year:
+            self.update_period(current_period)
+            current_period += 1
+            print(f"[DEBUG] Period is currently {current_period}.")
+            self.calculate_and_store_results(current_period)
 
-            # Calculate total income
-            total_income = self.household.aggregate_income()
+    def update_period(self, period: int) -> None:
+        """
+        Apply all modifications that 'move time forward' to the household,
+        such as inflation, income updates, and event handling.
+        """
+        if self.household is None:
+            error_message = "Household not initialized."
+            raise RuntimeError(error_message)
+        if self.start_year is None:
+            error_message = "Start year not defined."
+            raise RuntimeError(error_message)
 
-            # Calculate total taxes
-            total_taxes = self.household.aggregate_taxes()
+        print("[DEBUG] Moving to next period.")
 
-            # Calculate total mandatory expenses
-            total_mandatory_expenses = self.household.total_mandatory_expenses()
+        # Apply inflation only after the first period
+        if period >= self.start_year and self.inflation_rate > Decimal("0.00"):
+            self.household.apply_inflation(float(self.inflation_rate))
 
-            # Determine leftover income
-            leftover = (total_income - total_taxes - total_mandatory_expenses).quantize(
-                Decimal("0.01"), rounding=ROUND_HALF_UP
-            )
-            naive_discretionary = leftover  # At this stage, no savings allocation
+        # Update incomes
+        for member in self.household.members:
+            member.update_income(period + 1)
 
-            # Capture current expenses before applying inflation
-            current_living_costs = self.household.living_costs
-            current_housing_costs = self.household.housing_costs
+        # Apply events for the period
+        next_period_events = [e for e in self.events if e["year"] == period]
+        for event in next_period_events:
+            self.apply_event(event)
 
-            # Store results
-            year_result = {
-                "year": Decimal(year),
-                "total_income": total_income,
-                "total_taxes": total_taxes,
-                "total_mandatory_expenses": total_mandatory_expenses,
-                "leftover": leftover,
-                "naive_discretionary": naive_discretionary,
-                "living_costs": current_living_costs,
-                "housing_costs": current_housing_costs,
-            }
-            self.results.append(year_result)
+    def calculate_and_store_results(self, period: int) -> None:
+        """
+        Aggregates and stores financial data (incomes, taxes, leftover) for the given period.
+        """
+        if self.household is None:
+            error_message = "Household not initialized."
+            raise RuntimeError(error_message)
 
-            print(f"[DEBUG] Year {year} results: {year_result}")
+        total_income = self.household.aggregate_income()
+        total_taxes = self.household.aggregate_taxes()
+        total_mandatory_expenses = self.household.total_mandatory_expenses()
+        leftover = (total_income - total_taxes - total_mandatory_expenses).quantize(
+            Decimal("0.01"), rounding=ROUND_HALF_UP
+        )
 
-            # Apply inflation to next year's expenses if not the last year
-            if self.inflation_rate > Decimal("0.00") and year < self.end_year:
-                self.household.apply_inflation(float(self.inflation_rate))
+        year_result = {
+            "year": Decimal(period),
+            "total_income": total_income,
+            "total_taxes": total_taxes,
+            "total_mandatory_expenses": total_mandatory_expenses,
+            "leftover": leftover,
+            "naive_discretionary": leftover,
+            "living_costs": self.household.living_costs,
+            "housing_costs": self.household.housing_costs,
+        }
+        self.results.append(year_result)

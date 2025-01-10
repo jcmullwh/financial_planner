@@ -36,6 +36,22 @@ class Person:
         self.income = (self.income * (Decimal("1") + growth_rate)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         print(f"[DEBUG] {self.name}'s income updated to {self.income} for year {year}.")
 
+    def update_income_specific(self, new_income: Decimal) -> None:
+        """
+        Sets the person's income to a specific value, used for job changes.
+
+        Args:
+            new_income (Decimal): The new income value to set.
+
+        Raises:
+            ValueError: If the new_income is negative.
+        """
+        if new_income < 0:
+            error_message = "Income cannot be negative."
+            raise ValueError(error_message)
+        self.income = new_income.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        print(f"[DEBUG] {self.name}'s income explicitly set to {self.income}.")
+
     def calculate_taxes(self) -> Decimal:
         """
         Computes the taxes owed by the person based on their current income and tax rate.

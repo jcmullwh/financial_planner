@@ -49,3 +49,19 @@ def test_calculate_taxes_zero_income(person):
     person.income = Decimal("0.00")
     expected_taxes = Decimal("0.00")
     assert person.calculate_taxes() == expected_taxes
+
+
+# New Tests for Phase 2
+
+
+def test_update_income_specific(person):
+    new_income = Decimal("75000.00")
+    person.update_income_specific(new_income)
+    assert person.income == new_income
+
+
+def test_update_income_specific_negative(person):
+    # Assuming the update_income_specific method should not allow negative incomes
+    # Modify the Person class to raise ValueError if new_income is negative
+    with pytest.raises(ValueError, match="Income cannot be negative."):
+        person.update_income_specific(Decimal("-5000.00"))
