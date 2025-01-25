@@ -7,12 +7,13 @@ description = "Financial Planning Tools"
 readme = "README.md"
 dynamic = ["version"]
 classifiers = [
-    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3",
 ]
 requires-python = ">=3.9"
 dependencies = [
-    "pyyaml>=6.0"
+  "python-multipart",
 ]
+
 
 [project.urls]
 Documentation = "https://jcmullwh.github.io/financial_planner/"
@@ -20,7 +21,7 @@ Source = "https://github.com/jcmullwh/financial_planner"
 
 
 [tool.mypy]
-python_version = 3.9  # Ensure this matches your project's Python version
+python_version = "3.9"  # Ensure this matches your project's Python version
 files = ["src/financial_planner"]
 mypy_path = "src"  # Add this line to include the src directory in the search path
 disallow_untyped_defs = true
@@ -116,6 +117,8 @@ lint = "scripts/lint.py"
 lint-check = "scripts/lint-check.py"
 docs-serve = "mkdocs serve"
 docs-build = "mkdocs build"
+run-backend = "uvicorn financial_planner.backend_api:app --reload"
+run-frontend = "cd src/financial_planner/frontend/financial-planner-frontend && npm run start"
 
 [tool.pdm.build]
 # excludes = ["./**/.git"]
