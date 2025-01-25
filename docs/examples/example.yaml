@@ -1,0 +1,13 @@
+start_year: 2024
+end_year: 2034
+inflation_rate: 0.06
+household:
+  living_costs: 50000
+  housing_costs: 20000
+  members:
+    - name: "Jason"
+      income: 80000
+      tax_rate: 0.25
+    - name: "Linda"
+      income: 60000
+      tax_rate: 0.20
