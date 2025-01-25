@@ -18,6 +18,7 @@ class SimulationEngine:
         """
         Initializes a SimulationEngine instance.
         """
+        self.config: Optional[dict] = None
         self.household: Optional[Household] = None
         self.start_year: Optional[int] = None
         self.end_year: Optional[int] = None
@@ -78,6 +79,16 @@ class SimulationEngine:
         except (TypeError, ValueError) as e:
             error_message = f"Invalid configuration value: {e}"
             raise ValueError(error_message) from e
+        
+    def store_config(self, config: dict) -> None:
+            """
+            Stores the configuration for the simulation engine.
+
+            Args:
+                config (dict): The configuration dictionary to store.
+            """
+            self.config = config
+            print("[DEBUG] Configuration stored.")
 
     def apply_event(self, event: dict) -> None:
         """
@@ -133,6 +144,9 @@ class SimulationEngine:
         if self.start_year is None or self.end_year is None:
             error_message = "Invalid simulation boundaries."
             raise RuntimeError(error_message)
+
+        # Reset results at the beginning of the simulation
+        self.results = []
 
         current_period = self.start_year
         print(f"[DEBUG] Period is currently {current_period}.")
