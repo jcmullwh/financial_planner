@@ -4,7 +4,7 @@ authors = [
   { name = "financial_planner", email = "king.arthur@camelot.bt" }
 ]
 description = "Financial Planning Tools"
-readme = "README.md"
+readme = "../../README.md"
 dynamic = ["version"]
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -12,18 +12,19 @@ classifiers = [
 requires-python = ">=3.9"
 dependencies = [
   "python-multipart",
+  "uvicorn>=0.34.0",
+  "pyyaml>=6.0.2",
+  "fastapi>=0.115.7",
 ]
-
 
 [project.urls]
 Documentation = "https://jcmullwh.github.io/financial_planner/"
 Source = "https://github.com/jcmullwh/financial_planner"
 
-
 [tool.mypy]
-python_version = "3.9"  # Ensure this matches your project's Python version
-files = ["src/financial_planner"]
-mypy_path = "src"  # Add this line to include the src directory in the search path
+python_version = "3.9"
+files = ["apps/python-backend/src/financial_planner"]
+mypy_path = "apps/python-backend/src"
 disallow_untyped_defs = true
 disallow_any_unimported = true
 no_implicit_optional = true
@@ -32,10 +33,10 @@ warn_return_any = true
 warn_unused_ignores = true
 show_error_codes = true
 
-
 [tool.ruff]
 target-version = "py39"
 line-length = 120
+
 [tool.ruff.lint]
 extend-select = ["I"]
 select = [
@@ -62,34 +63,28 @@ select = [
     "TID",
     "UP",
     "W",
-    "YTT",
+    "YTT"
 ]
 ignore = [
-    # Allow non-abstract empty methods in abstract base classes
     "B027",
-    # Allow boolean positional values in function calls, like dict.get(... True)
     "FBT003",
-    # Ignore checks for possible passwords
     "S105",
     "S106",
     "S107",
-    # Ignore complexity
     "C901",
     "PLR0911",
     "PLR0912",
     "PLR0913",
     "PLR0915",
-    # Not useful for early iterations
-    "T201" # No print
+    "T201"
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101","PLR2004","E712"]
+"apps/python-backend/tests/*" = ["S101","PLR2004","E712"]
 
 [tool.pytest.ini_options]
-addopts = "--cov=financial_planner/ --cov-report=term-missing"
+addopts = "--cov=apps/python-backend/src/financial_planner --cov-report=term-missing"
 asyncio_mode = "strict"
-
 
 [tool.pdm.dev-dependencies]
 test = [
@@ -97,32 +92,31 @@ test = [
   "pytest-cov>=5.0.0",
   "pytest-asyncio",
   "types-PyYAML>=6.0"
-  ]
+]
 docs = [
   "mkdocs>=1.6.0",
   "mkdocs-material>=9.5.21",
   "mkdocstrings[python]>=0.25.1"
 ]
-ruff = ">=0.8.5"
-mypy = ">=1.10.0"
-deptry = ">=0.16.1"
-pre-commit = ">=3.7.0"
-tox = ">=4.15.0"
-
+lint = [
+  "ruff>=0.8.5",
+  "mypy>=1.10.0",
+  "deptry>=0.16.1",
+  "pre-commit>=3.7.0",
+  "tox>=4.15.0"
+]
 
 [tool.pdm.scripts]
 test = "pytest"
 test-cov-xml = "pytest --cov-report=xml"
-lint = "scripts/lint.py"
-lint-check = "scripts/lint-check.py"
+lint = "python scripts/lint.py"
+lint-check = "python apps/python-backend/scripts/lint-check.py"
 docs-serve = "mkdocs serve"
 docs-build = "mkdocs build"
-run-backend = "uvicorn financial_planner.backend_api:app --reload"
-run-frontend = "cd src/financial_planner/frontend/financial-planner-frontend && npm run start"
+backend = "uvicorn financial_planner.backend_api:app --reload"
+run-frontend = "cd apps/frontend/financial-planner-frontend && npm run start"
 
 [tool.pdm.build]
-# excludes = ["./**/.git"]
-# package-dir = "."
 package-dir = "src"
 
 [build-system]

@@ -1,9 +1,10 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+
 import yaml
-from financial_planner.simulation_engine import SimulationEngine
+from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+
 from financial_planner.report_generator import generate_report
-import os
+from financial_planner.simulation_engine import SimulationEngine
 
 app = FastAPI()
 
@@ -19,6 +20,7 @@ app.add_middleware(
 simulation = SimulationEngine()
 results = []
 
+
 @app.post("/upload-scenario")
 async def upload_scenario(file: UploadFile = File(...)):
     print(f"Received file: {file.filename}")
@@ -29,7 +31,7 @@ async def upload_scenario(file: UploadFile = File(...)):
         "text/yaml",
         "text/plain",
         "application/yaml",
-        "application/octet-stream"  # Added to accept 'application/octet-stream'
+        "application/octet-stream",  # Added to accept 'application/octet-stream'
     ]
 
     if file.content_type not in allowed_mime_types:
@@ -48,8 +50,9 @@ async def upload_scenario(file: UploadFile = File(...)):
         print(f"[ERROR] YAML parsing error: {e}")
         raise HTTPException(status_code=400, detail=f"YAML parsing error: {e}")
     except Exception as e:
-        print(f"[ERROR] {str(e)}")
+        print(f"[ERROR] {e!s}")
         raise HTTPException(status_code=400, detail=str(e))
+
 
 @app.post("/run-simulation")
 def run_simulation():
@@ -63,6 +66,7 @@ def run_simulation():
         return {"message": "Simulation run successfully."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/get-results")
 def get_results():

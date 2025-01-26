@@ -1,0 +1,18 @@
+{
+    "name": "start-all",
+    "root": "apps/tools/start-all",
+    "projectType": "application",
+    "targets": {
+      "dev": {
+        "executor": "nx:run-commands",
+        "options": {
+          "commands": [
+            "nx serve python-backend", 
+            "nx start frontend"
+          ],
+          "parallel": true
+        }
+      }
+    }
+  }
+  

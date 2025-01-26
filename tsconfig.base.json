@@ -1,0 +1,8 @@
+{
+    "compilerOptions": {
+      "rootDir": ".",
+      "strict": true
+    },
+    "exclude": ["node_modules", "tmp"]
+  }
+  

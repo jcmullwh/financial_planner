@@ -1,0 +1,64 @@
+{
+    "name": "python-backend",
+    "root": "apps/python-backend",
+    "projectType": "application",
+    "targets": {
+      "build": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "pdm build",
+          "cwd": "apps/python-backend"
+        }
+      },
+      "test": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "pdm run test",
+          "cwd": "apps/python-backend"
+        }
+      },
+      "test-cov-xml": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "pdm run test-cov-xml",
+          "cwd": "apps/python-backend"
+        }
+      },
+      "lint": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "pdm run lint",
+          "cwd": "apps/python-backend"
+        }
+      },
+      "lint-check": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "pdm run lint-check",
+          "cwd": "apps/python-backend"
+        }
+      },
+      "serve": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "pdm run backend",
+          "cwd": "apps/python-backend"
+        }
+      },
+      "docs-serve": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "pdm run docs-serve",
+          "cwd": "apps/python-backend"
+        }
+      },
+      "docs-build": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "pdm run docs-build",
+          "cwd": "apps/python-backend"
+        }
+      }
+    }
+  }
+  

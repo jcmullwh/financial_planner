@@ -1,0 +1,23 @@
+{
+  "name": "financial-planner",
+  "workspaces": [
+    "apps/*"
+  ],
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "nx run start-all:dev",
+    "build:backend": "nx run python-backend:build",
+    "test:backend": "nx run python-backend:test",
+    "serve:backend": "nx run python-backend:serve",
+    "build:frontend": "nx run frontend:build",
+    "start:frontend": "nx run frontend:start",
+    "build:all": "nx run-many --target=build --projects=python-backend,frontend --parallel",
+    "test:all": "nx run-many --target=test --projects=python-backend --parallel"
+  },
+  "devDependencies": {
+    "nx": "20.3.3",
+    "concurrently": "^7.0.0"
+  },
+  "nx": {}
+}

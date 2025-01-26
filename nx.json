@@ -1,0 +1,26 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "extends": "nx/presets/core.json",
+  "npmScope": "my-org",
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "nx/tasks-runners/default",
+      "options": {
+        "cacheableOperations": ["build", "test"]
+      }
+    }
+  },
+  "workspaceLayout": {
+    "appsDir": "apps",
+    "libsDir": "packages"
+  },
+  "defaultBase": "main",
+  "targetDefaults": {
+    "build": {
+      "cache": true
+    },
+    "test": {
+      "cache": true
+    }
+  }
+}

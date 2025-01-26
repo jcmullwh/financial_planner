@@ -79,16 +79,16 @@ class SimulationEngine:
         except (TypeError, ValueError) as e:
             error_message = f"Invalid configuration value: {e}"
             raise ValueError(error_message) from e
-        
-    def store_config(self, config: dict) -> None:
-            """
-            Stores the configuration for the simulation engine.
 
-            Args:
-                config (dict): The configuration dictionary to store.
-            """
-            self.config = config
-            print("[DEBUG] Configuration stored.")
+    def store_config(self, config: dict) -> None:
+        """
+        Stores the configuration for the simulation engine.
+
+        Args:
+            config (dict): The configuration dictionary to store.
+        """
+        self.config = config
+        print("[DEBUG] Configuration stored.")
 
     def apply_event(self, event: dict) -> None:
         """

@@ -1,0 +1,22 @@
+{
+    "name": "frontend",
+    "root": "apps/frontend/financial-planner-frontend",
+    "projectType": "application",
+    "targets": {
+      "build": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "npm run build",
+          "cwd": "apps/frontend/financial-planner-frontend"
+        }
+      },
+      "start": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "npm start",
+          "cwd": "apps/frontend/financial-planner-frontend"
+        }
+      }
+    }
+  }
+  
