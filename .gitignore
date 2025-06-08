@@ -135,3 +135,4 @@ db.sqlite3-journal
 
 .nx/cache
 .nx/workspace-data
+financial_simulation_results.csv
