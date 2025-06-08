@@ -72,8 +72,8 @@ nav:
         - "Adjust Tax Rate": "how_to/adjust_tax_rate.md"
         - "Adding Members": "how_to/adding_members.md"
     - Reference:
-        - "API Reference": "reference/index.md"
+        - "API Reference": "reference/financial_planner.md"
     - Explanation:
         - "Index": "explanation/index.md"
-        - "Architecture Overview": "explanation/architecture_overview.md"
+        - "Architecture Overview": "explanation/architecture.md"
         - "Design Choices": "explanation/design_choices.md"
