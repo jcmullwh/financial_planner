@@ -2,7 +2,7 @@
 
 from typing import Any, Optional, cast
 
-import yaml
+import yaml  # type: ignore[import-untyped]
 
 
 def load_yaml_config(filepath: str) -> Optional[dict[str, Any]]:
