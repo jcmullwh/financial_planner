@@ -69,11 +69,11 @@ nav:
     - How-To Guides:
         - "Index": "how_to/index.md"
         - "Update Inflation Rate": "how_to/update_inflation_rate.md"
-        - "Adjust Tax Rate": "how_to/adjust_tax_rate.md"
+        - "Adjust Tax Rate": "how_to/adjust_tax_rates.md"
         - "Adding Members": "how_to/adding_members.md"
     - Reference:
         - "API Reference": "reference/index.md"
     - Explanation:
         - "Index": "explanation/index.md"
-        - "Architecture Overview": "explanation/architecture_overview.md"
+        - "Architecture Overview": "explanation/architecture.md"
         - "Design Choices": "explanation/design_choices.md"
