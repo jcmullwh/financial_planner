@@ -1,6 +1,11 @@
 # financial_planner/__init__.py
 
-__version__ = "0.0.0"
+from importlib.metadata import version
+
+try:
+    __version__ = version("financial_planner")
+except Exception:  # pragma: no cover - fallback for missing package metadata
+    __version__ = "0.0.0"
 
 from .config_loader import load_yaml_config
 from .household import Household

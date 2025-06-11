@@ -1,11 +1,11 @@
 # financial_planner/config_loader.py
 
-from typing import Any, cast  # Added to resolve type issues
+from typing import Any, Optional, cast
 
 import yaml
 
 
-def load_yaml_config(filepath: str) -> dict[str, Any]:
+def load_yaml_config(filepath: str) -> Optional[dict[str, Any]]:
     """
     Loads and parses a YAML configuration file.
 
@@ -13,7 +13,7 @@ def load_yaml_config(filepath: str) -> dict[str, Any]:
         filepath (str): The path to the YAML configuration file.
 
     Returns:
-        dict[str, Any]: The parsed configuration as a dictionary.
+        Optional[dict[str, Any]]: The parsed configuration as a dictionary or None if the file is empty.
 
     Raises:
         FileNotFoundError: If the configuration file does not exist.
@@ -21,9 +21,9 @@ def load_yaml_config(filepath: str) -> dict[str, Any]:
     """
     try:
         with open(filepath) as file:
-            config = cast(dict[str, Any], yaml.safe_load(file))  # Cast to dict[str, Any]
+            loaded = yaml.safe_load(file)
             print(f"[DEBUG] Configuration loaded from {filepath}.")
-            return config
+            return cast(Optional[dict[str, Any]], loaded)
     except FileNotFoundError as e:
         message = f"Configuration file {filepath} not found."
         raise FileNotFoundError(message) from e
