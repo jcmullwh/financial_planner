@@ -22,5 +22,5 @@ runs:
         cache: true
 
     - name: Install dependencies
-      run: pdm install
+      run: pdm install -dG :all
       shell: bash

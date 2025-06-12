@@ -71,4 +71,4 @@ class Household:
         self.housing_costs = (self.housing_costs * (Decimal("1") + rate)).quantize(
             Decimal("0.01"), rounding=ROUND_HALF_UP
         )
-        print(f"[DEBUG] Applied inflation rate of {inflation_rate*100}% to living and housing costs.")
+        print(f"[DEBUG] Applied inflation rate of {inflation_rate * 100}% to living and housing costs.")
