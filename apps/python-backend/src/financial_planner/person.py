@@ -1,64 +1,57 @@
 # financial_planner/person.py
+from decimal import Decimal, ROUND_HALF_UP
+from datetime import datetime
+from typing import List
 
-from decimal import ROUND_HALF_UP, Decimal
-
+from .transactions import TransactionTimeline, Transaction
+from .contracts import FinancialContract
+from .state import Asset, Liability
 
 class Person:
     """
-    Represents an individual within a household, encapsulating personal financial details
-    such as income and tax obligations.
+    Person Aggregator
+    -----------------
+    Aggregates that individual's:
+      - TransactionTimeline
+      - Contracts (e.g. EmploymentContract)
+      - Assets, Liabilities, etc.
     """
-
-    def __init__(self, name: str, income: float, tax_rate: float, savings: float = 0.0):
-        """
-        Initializes a Person instance.
-
-        Args:
-            name (str): The identifier for the person (e.g., "Jason").
-            income (float): The annual income of the person.
-            tax_rate (float): The flat tax rate applicable to the person's income (e.g., 0.25 for 25%).
-            savings (float, optional): The amount allocated to savings each year. Defaults to 0.0.
-        """
+    def __init__(self, name: str):
         self.name = name
-        self.income = Decimal(income).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-        self.tax_rate = Decimal(tax_rate).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
-        self.savings = Decimal(savings).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        self.timeline = TransactionTimeline()
+        self.contracts: List[FinancialContract] = []
+        self.assets: List[Asset] = []
+        self.liabilities: List[Liability] = []
 
-    def update_income(self, year: int) -> None:
-        """
-        Adjusts the person's income based on the simulation year.
-        This method applies a fixed annual growth rate to the income.
+    def add_contract(self, contract: FinancialContract):
+        self.contracts.append(contract)
+        contract.register(self.timeline)
 
-        Args:
-            year (int): The current year in the simulation.
-        """
-        growth_rate = Decimal("0.03")  # 3% annual income growth
-        self.income = (self.income * (Decimal("1") + growth_rate)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-        print(f"[DEBUG] {self.name}'s income updated to {self.income} for year {year}.")
+    def remove_contract(self, contract: FinancialContract):
+        if contract in self.contracts:
+            contract.cancel()
+            self.contracts.remove(contract)
 
-    def update_income_specific(self, new_income: Decimal) -> None:
-        """
-        Sets the person's income to a specific value, used for job changes.
+    def add_asset(self, asset: Asset):
+        self.assets.append(asset)
 
-        Args:
-            new_income (Decimal): The new income value to set.
+    def add_liability(self, liability: Liability):
+        self.liabilities.append(liability)
 
-        Raises:
-            ValueError: If the new_income is negative.
-        """
-        if new_income < 0:
-            error_message = "Income cannot be negative."
-            raise ValueError(error_message)
-        self.income = new_income.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-        print(f"[DEBUG] {self.name}'s income explicitly set to {self.income}.")
+    def aggregate_transactions(self, start_time: datetime, end_time: datetime) -> List[Transaction]:
+        return self.timeline.get_transactions(start_time, end_time)
 
-    def calculate_taxes(self) -> Decimal:
-        """
-        Computes the taxes owed by the person based on their current income and tax rate.
+    def total_income(self, start_time: datetime, end_time: datetime) -> Decimal:
+        txs = self.aggregate_transactions(start_time, end_time)
+        amt = sum(Decimal(str(tx.amount)) for tx in txs if tx.amount > 0)
+        return amt.quantize(Decimal("0.01"), ROUND_HALF_UP)
 
-        Returns:
-            Decimal: The total tax amount for the current year.
-        """
-        taxes = (self.income * self.tax_rate).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-        print(f"[DEBUG] {self.name}'s taxes calculated as {taxes}.")
-        return taxes
+    def total_expenses(self, start_time: datetime, end_time: datetime) -> Decimal:
+        txs = self.aggregate_transactions(start_time, end_time)
+        amt = sum(Decimal(str(tx.amount)) for tx in txs if tx.amount < 0)
+        return amt.quantize(Decimal("0.01"), ROUND_HALF_UP)
+
+    def compute_net_worth(self) -> Decimal:
+        assets_value = sum(asset.current_value for asset in self.assets)
+        liabilities_value = sum(liab.outstanding_balance for liab in self.liabilities)
+        return (assets_value - liabilities_value).quantize(Decimal("0.01"), ROUND_HALF_UP)

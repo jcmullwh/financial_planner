@@ -1,177 +1,135 @@
 # tests/test_household.py
-
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 import pytest
 
-from financial_planner.household import Household, Mortgage
+from financial_planner.household import Household
 from financial_planner.person import Person
+from financial_planner.contracts import MortgageContract, EmploymentContract, RentContract
+from financial_planner.state import Liability
+from financial_planner.transactions import Transaction
 
-
+# A fixture that builds a Household with two Persons.
 @pytest.fixture
 def household():
-    member1 = Person(name="User1", income=60000.00, tax_rate=0.25, savings=6000.00)
-    member2 = Person(name="User2", income=40000.00, tax_rate=0.15, savings=4000.00)
-    return Household(members=[member1, member2], living_costs=50000.00, housing_costs=20000.00)
-
+    hh = Household()
+    p1 = Person("User1")
+    p2 = Person("User2")
+    hh.add_member(p1)
+    hh.add_member(p2)
+    return hh
 
 def test_household_initialization(household):
+    # Check that household has 2 members and an empty timeline.
     assert len(household.members) == 2
-    assert household.living_costs == Decimal("50000.00")
-    assert household.housing_costs == Decimal("20000.00")
-
+    assert household.timeline.get_transactions() == []
 
 def test_aggregate_income(household):
-    total_income = household.aggregate_income()
-    expected_income = Decimal("60000.00") + Decimal("40000.00")
+    # Manually add some positive transactions to the household timeline.
+    t1 = Transaction(timestamp=datetime(2025, 1, 1), amount=5000.00, category="salary")
+    t2 = Transaction(timestamp=datetime(2025, 1, 15), amount=3000.00, category="salary")
+    household.timeline.add_transaction(t1)
+    household.timeline.add_transaction(t2)
+    
+    agg_txs = household.aggregate_transactions(datetime(2025, 1, 1), datetime(2025, 1, 31))
+    total_income = sum(Decimal(str(tx.amount)) for tx in agg_txs if tx.amount > 0)
+    expected_income = Decimal("5000.00") + Decimal("3000.00")
     assert total_income == expected_income
-
-
-def test_aggregate_taxes(household, monkeypatch):
-    # Mock calculate_taxes to return predefined values
-    def mock_calculate_taxes_user1():
-        return Decimal("15000.00")  # 60000 * 0.25
-
-    def mock_calculate_taxes_user2():
-        return Decimal("6000.00")  # 40000 * 0.15
-
-    monkeypatch.setattr(household.members[0], "calculate_taxes", mock_calculate_taxes_user1)
-    monkeypatch.setattr(household.members[1], "calculate_taxes", mock_calculate_taxes_user2)
-
-    total_taxes = household.aggregate_taxes()
-    expected_taxes = Decimal("15000.00") + Decimal("6000.00")
-    assert total_taxes == expected_taxes
-
-
-def test_total_mandatory_expenses(household):
-    total_expenses = household.total_mandatory_expenses()
-    expected_expenses = Decimal("50000.00") + Decimal("20000.00")
-    assert total_expenses == expected_expenses
-
-
-def test_apply_inflation(household):
-    inflation_rate = 0.02  # 2%
-    household.apply_inflation(inflation_rate)
-    expected_living = (Decimal("50000.00") * Decimal("1.02")).quantize(Decimal("0.01"))
-    expected_housing = (Decimal("20000.00") * Decimal("1.02")).quantize(Decimal("0.01"))
-    assert household.living_costs == expected_living
-    assert household.housing_costs == expected_housing
-
-
-def test_household_no_members():
-    household = Household(members=[], living_costs=30000.00, housing_costs=15000.00)
-    assert household.aggregate_income() == Decimal("0.00")
-    assert household.aggregate_taxes() == Decimal("0.00")
-    assert household.total_mandatory_expenses() == Decimal("45000.00")
-
-
-def test_household_zero_expenses():
-    member = Person(name="User", income=50000.00, tax_rate=0.20)
-    household = Household(members=[member], living_costs=0.00, housing_costs=0.00)
-    assert household.total_mandatory_expenses() == Decimal("0.00")
-
-
-def test_household_negative_expenses():
-    member = Person(name="User", income=50000.00, tax_rate=0.20)
-    household = Household(members=[member], living_costs=-1000.00, housing_costs=-500.00)
-    expected_expenses = Decimal("-1000.00") + Decimal("-500.00")
-    assert household.total_mandatory_expenses() == expected_expenses
-
-
-# New Tests for Phase 2
-
-
-def test_add_mortgage(household):
-    principal = Decimal("300000.00")
-    interest_rate = Decimal("0.04")
-    mortgage = Mortgage(principal=principal, interest_rate=interest_rate, term_years=30)
-
-    initial_housing_costs = household.housing_costs
-    household.add_mortgage(mortgage)
-
-    assert len(household.mortgages) == 1
-    assert household.mortgages[0].principal == principal
-    assert household.mortgages[0].interest_rate == interest_rate
-    assert household.housing_costs == initial_housing_costs + mortgage.annual_payment
-
-
-def test_increase_living_costs(household):
-    additional_expense = Decimal("7000.00")
-    initial_living_costs = household.living_costs
-    household.increase_living_costs(additional_expense)
-    assert household.living_costs == initial_living_costs + additional_expense
-
 
 def test_add_windfall(household):
-    windfall_amount = Decimal("50000.00")
-    initial_cash_reserves = household.cash_reserves
-    household.add_windfall(windfall_amount)
-    assert household.cash_reserves == initial_cash_reserves + windfall_amount
-
-    # Test aggregate_income includes windfall and resets cash_reserves
-    total_income = household.aggregate_income()
-    expected_income = Decimal("60000.00") + Decimal("40000.00") + windfall_amount
-    assert total_income == expected_income
-    assert household.cash_reserves == Decimal("0.00")
-
-
-def test_add_multiple_mortgages(household):
-    mortgage1 = Mortgage(principal=Decimal("200000.00"), interest_rate=Decimal("0.035"), term_years=15)
-    mortgage2 = Mortgage(principal=Decimal("150000.00"), interest_rate=Decimal("0.04"), term_years=20)
-
-    initial_housing_costs = household.housing_costs
-    household.add_mortgage(mortgage1)
-    household.add_mortgage(mortgage2)
-
-    assert len(household.mortgages) == 2
-    assert household.housing_costs == initial_housing_costs + mortgage1.annual_payment + mortgage2.annual_payment
-
-
-def test_aggregate_income_with_windfall(household):
+    # Simulate a windfall by adding a one-off transaction to the household timeline.
     windfall_amount = Decimal("10000.00")
-    household.add_windfall(windfall_amount)
+    t = Transaction(timestamp=datetime(2025, 2, 1), amount=float(windfall_amount), category="windfall")
+    household.timeline.add_transaction(t)
+    
+    agg_txs = household.aggregate_transactions(datetime(2025, 2, 1), datetime(2025, 2, 1))
+    total_income = sum(Decimal(str(tx.amount)) for tx in agg_txs if tx.amount > 0)
+    assert total_income == windfall_amount
 
-    total_income = household.aggregate_income()
-    expected_income = Decimal("60000.00") + Decimal("40000.00") + windfall_amount
-    assert total_income == expected_income
-    assert household.cash_reserves == Decimal("0.00")
-
-
-def test_mortgage_calculation():
+def test_add_mortgage(household):
+    # Create a mortgage contract and add it to the household.
     principal = Decimal("300000.00")
     interest_rate = Decimal("0.04")
     term_years = 30
-    mortgage = Mortgage(principal=principal, interest_rate=interest_rate, term_years=term_years)
+    # Create a liability object that the contract will update.
+    liability = Liability("Mortgage", principal)
+    mortgage_contract = MortgageContract(
+        start_date=datetime(2025, 3, 1),
+        principal=principal,
+        annual_interest_rate=interest_rate,
+        term_years=term_years,
+        liability=liability
+    )
+    
+    initial_contract_count = len(household.contracts)
+    household.add_contract(mortgage_contract)
+    assert len(household.contracts) == initial_contract_count + 1
 
-    # Expected annual payment calculation
-    # Using formula: P * (r * (1 + r)^n) / ((1 + r)^n - 1)
-    # For 300,000 at 4% over 30 years:
-    # payment ≈ 17991.60
-    expected_payment = Decimal("17349.03")
-    assert mortgage.annual_payment == expected_payment
+    # Generate mortgage transactions over a few months.
+    household.timeline.generate_transactions(datetime(2025, 6, 1))
+    txs = household.timeline.get_transactions()
+    mortgage_txs = [tx for tx in txs if tx.category in ("mortgage_interest", "mortgage_principal")]
+    assert len(mortgage_txs) > 0
 
+def test_employment_contract(household):
+    # Attach an employment contract to one Person.
+    person = household.members[0]
+    salary = Decimal("4000.00")
+    contract = EmploymentContract(
+        start_date=datetime(2025, 1, 1),
+        salary=salary,
+        interval=timedelta(days=30),
+        person_name=person.name
+    )
+    initial_contract_count = len(person.contracts)
+    person.add_contract(contract)
+    assert len(person.contracts) == initial_contract_count + 1
 
-def test_mortgage_make_payment():
-    principal = Decimal("100000.00")
-    interest_rate = Decimal("0.05")
-    term_years = 10
-    mortgage = Mortgage(principal=principal, interest_rate=interest_rate, term_years=term_years)
+    # Generate salary transactions over two months.
+    person.timeline.generate_transactions(datetime(2025, 3, 1))
+    txs = person.timeline.get_transactions()
+    salary_txs = [tx for tx in txs if tx.category == "salary" and tx.metadata.get("person") == person.name]
+    # Expect at least two salary transactions.
+    assert len(salary_txs) >= 2
 
-    initial_balance = mortgage.remaining_balance
-    payment = mortgage.make_payment()
+def test_rent_contract(household):
+    # Add a rent contract to the household.
+    monthly_rent = Decimal("1200.00")
+    contract = RentContract(
+        start_date=datetime(2025, 4, 1),
+        monthly_rent=monthly_rent
+    )
+    initial_contract_count = len(household.contracts)
+    household.add_contract(contract)
+    assert len(household.contracts) == initial_contract_count + 1
 
-    expected_interest_payment = (initial_balance * interest_rate).quantize(Decimal("0.01"))
-    expected_principal_payment = mortgage.annual_payment - expected_interest_payment
-    assert payment == expected_principal_payment
-    assert mortgage.remaining_balance == initial_balance - expected_principal_payment
+    # Generate rent transactions for three months.
+    household.timeline.generate_transactions(datetime(2025, 7, 1))
+    txs = household.timeline.get_transactions()
+    rent_txs = [tx for tx in txs if tx.category == "rent"]
+    assert len(rent_txs) >= 3
 
+def test_compute_net_worth(household):
+    # Add assets and liabilities at both the household and person levels.
+    from financial_planner.state import Asset, Liability
+    # Household-level asset and liability.
+    asset_house = Asset("House", Decimal("350000.00"), datetime(2025, 1, 1))
+    liability_mortgage = Liability("Mortgage", Decimal("300000.00"))
+    household.add_asset(asset_house)
+    household.add_liability(liability_mortgage)
+    
+    # Person-level asset and liability.
+    person = household.members[0]
+    asset_car = Asset("Car", Decimal("20000.00"), datetime(2025, 2, 1))
+    liability_car_loan = Liability("Car Loan", Decimal("15000.00"))
+    person.add_asset(asset_car)
+    person.add_liability(liability_car_loan)
+    
+    net_worth = household.compute_net_worth()
+    expected_net = Decimal("350000.00") - Decimal("300000.00") + Decimal("20000.00") - Decimal("15000.00")
+    assert net_worth == expected_net
 
-def test_mortgage_is_active():
-    principal = Decimal("50000.00")
-    interest_rate = Decimal("0.05")
-    term_years = 1
-    mortgage = Mortgage(principal=principal, interest_rate=interest_rate, term_years=term_years)
-
-    assert mortgage.is_active() == True
-    mortgage.make_payment()  # This should pay off the mortgage
-    assert mortgage.is_active() == False
+# The following tests from the previous phase were removed:
+# - Tests referencing 'living_costs', 'housing_costs', 'cash_reserves', aggregate_taxes,
+#   Mortgage.make_payment, and Mortgage.is_active are no longer relevant in the new design.
