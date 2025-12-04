@@ -68,7 +68,6 @@ def validate_event(event: dict) -> None:
     event_type = event["type"]
     if event_type == "house_purchase":
         if "principal" not in event or "interest_rate" not in event:
-            print(event)
             error_message = (
                 f"'house_purchase' events must include 'principal' and 'interest_rate'. Invalid event: {event}"
             )
