@@ -19,6 +19,8 @@
 ## Overview
 This project provides tools for modeling and analyzing personal or organizational finances. It uses Python 3.9+, PDM for package management, Ruff for linting, Mypy for type checking, and Mkdocs for generating documentation. It includes functionalities to forecast budgets, investments, and tax scenarios, helping users make informed financial decisions.
 
+**Disclaimer:** This project is intended for educational and demonstration purposes only and should not be considered professional financial or legal advice.
+
 ## Development
 
 ### Setup environment
